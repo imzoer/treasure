@@ -44,4 +44,6 @@ key的生成规则：
 
 思路来源：
 
-使用接口的思路参考https://github.com/baoyongzhang/Treasure，但是没有使用APT，简化了实现方法。
+使用接口的思路参考https://github.com/baoyongzhang/Treasure
+
+但是没有使用APT，简化了实现方法。
