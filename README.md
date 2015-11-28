@@ -28,6 +28,13 @@ key的生成规则：
 3、如果args长度为1，用methodName生成key，比如getXXX，则生成的key是xxx
 
 
+有两种方式可以指定从sp读取时候的default值：
+
+1、通过给get函数添加{@link Default}注解
+
+2、通过给get函数的第一个参数添加{@link DefaultValue}注解
+
+
 实现原理：
 
 使用java动态代理，将对接口的调用直接根据接口的定义（包括解析annotation）将解析出来的数据存储到sp中。
