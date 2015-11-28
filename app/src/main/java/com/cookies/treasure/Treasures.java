@@ -3,6 +3,7 @@ package com.cookies.treasure;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -19,13 +20,13 @@ import java.util.HashMap;
  * <pre>
  *      key的生成规则：
  *      1、如果有{@link Key}，用key()的值
- *      2、对于GET函数，所有参数用于拼接key(临时方案)；对于SET函数，如果args长度大于1，那么除最后一个参数，前面所有的参数用于拼接key。每个参数之间以_分隔
+ *      2、对于GET函数，所有参数用于拼接key(第一个参数如果是被{@link DefaultValue}注解，则不用作默认值，不用作拼接key)；对于SET函数，如果args长度大于1，那么除最后一个参数，前面所有的参数用于拼接key。每个参数之间以_分隔
  *      3、如果args长度为1，用methodName生成key，比如getXXX，则生成的key是xxx
  * </pre>
  * <pre>
- *      还未支持的功能：
- *      1、指定sp的读取模式 private / multi process
- *      2、GET函数传入参数作为default值(对应于key的生成规则部分，2的临时方案)
+ *      有两种方式可以指定从sp读取时候的default值
+ *      1、通过给get函数添加{@link Default}注解
+ *      2、通过给get函数的第一个参数添加{@link DefaultValue}注解
  * </pre>
  */
 @SuppressWarnings("unchecked")
@@ -84,20 +85,39 @@ public class Treasures {
         SharedPreferences sp = context.getSharedPreferences(fileName, get.get());
 
         // 2.get key for kv pair
+        Annotation[][] methodAnnotations = method.getParameterAnnotations();
+        boolean hasDefaultValue = false;
+        for (int i = 0; i < methodAnnotations.length; i++) {
+            for (int j = 0; j < methodAnnotations[i].length; j++) {
+                if (methodAnnotations[i][j] instanceof DefaultValue) {
+                    if (i != 0) {
+                        throw new RuntimeException("DefaultValue should be first param");
+                    } else {
+                        hasDefaultValue = true;
+//                        break;
+                    }
+                }
+            }
+        }
+
         String key = "";
         Key keyAnnotation = method.getAnnotation(Key.class);
         boolean isGET = method.getName().startsWith(GET);
         if (keyAnnotation != null) {
             key = keyAnnotation.key();
-        } else if (args != null && args.length > 1) {
-            int len = isGET ? args.length : args.length - 1; // get函数所有参数用于生成key
+        } else if (args != null && (hasDefaultValue ? args.length > 1 : args.length > 0)) {
+            int len = isGET ? args.length : args.length - 1;
             for (int i = 0; i < len; i++) {
-                if (args[i].getClass() == String.class || args[i].getClass() == Integer.class || args[i].getClass() == Long.class) {
-                    key += args[i];
-                    if (i != len - 1) {
-                        key += "_";
-                    }
+                if (i == 0 && hasDefaultValue) {
                     continue;
+                } else {
+                    if (args[i].getClass() == String.class || args[i].getClass() == Integer.class || args[i].getClass() == Long.class) {
+                        key += args[i];
+                        if (i != len - 1) {
+                            key += "_";
+                        }
+                        continue;
+                    }
                 }
                 throw new RuntimeException("args for generate key must be string/int/long");
             }
@@ -113,15 +133,35 @@ public class Treasures {
             Default defaultAnnotation = method.getAnnotation(Default.class);
             Class returnType = method.getReturnType();
             if (returnType == int.class || returnType == Integer.class) {
-                return sp.getInt(key, defaultAnnotation == null ? 0 : defaultAnnotation.intValue());
+                if (hasDefaultValue) {
+                    return sp.getInt(key, defaultAnnotation == null ? (int) args[0] : defaultAnnotation.intValue());
+                } else {
+                    return sp.getInt(key, defaultAnnotation == null ? 0 : defaultAnnotation.intValue());
+                }
             } else if (returnType == String.class) {
-                return sp.getString(key, defaultAnnotation == null ? "" : defaultAnnotation.stringValue());
+                if (hasDefaultValue) {
+                    return sp.getString(key, defaultAnnotation == null ? (String) args[0] : defaultAnnotation.stringValue());
+                } else {
+                    return sp.getString(key, defaultAnnotation == null ? "" : defaultAnnotation.stringValue());
+                }
             } else if (returnType == long.class || returnType == Long.class) {
-                return sp.getLong(key, defaultAnnotation == null ? 0 : defaultAnnotation.longValue());
+                if (hasDefaultValue) {
+                    return sp.getLong(key, defaultAnnotation == null ? (long) args[0] : defaultAnnotation.longValue());
+                } else {
+                    return sp.getLong(key, defaultAnnotation == null ? 0 : defaultAnnotation.longValue());
+                }
             } else if (returnType == float.class || returnType == Float.class) {
-                return sp.getFloat(key, defaultAnnotation == null ? 0 : defaultAnnotation.floatValue());
+                if (hasDefaultValue) {
+                    return sp.getFloat(key, defaultAnnotation == null ? (float) args[0] : defaultAnnotation.floatValue());
+                } else {
+                    return sp.getFloat(key, defaultAnnotation == null ? 0 : defaultAnnotation.floatValue());
+                }
             } else if (returnType == boolean.class || returnType == Boolean.class) {
-                return sp.getBoolean(key, defaultAnnotation != null && defaultAnnotation.boolValue());
+                if (defaultAnnotation == null) {
+                    return sp.getBoolean(key, (hasDefaultValue && (boolean) args[0]));
+                } else {
+                    return sp.getBoolean(key, defaultAnnotation.boolValue());
+                }
             } else {
                 throw new RuntimeException("unknown returnType:" + returnType);
             }

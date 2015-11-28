@@ -27,6 +27,8 @@ public class MainActivity extends Activity {
         Log.d("mason", "userName with annotation:" + Treasures.of(ConfigWithAnnotations.class).getUserName());
         Treasures.of(ConfigWithAnnotations.class).setUserName("naughty");
         Log.d("mason", "userName with annotation:" + Treasures.of(ConfigWithAnnotations.class).getUserName());
+
+        Log.d("mason", "rootUserName:" + Treasures.of(ConfigWithAnnotations.class).getRootUserName("root", "fuck", "name"));
     }
 
     @Override

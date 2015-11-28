@@ -1,13 +1,14 @@
 package com.example.masonqwli.treasurestest;
 
 import com.cookies.treasure.Default;
+import com.cookies.treasure.DefaultValue;
 import com.cookies.treasure.FileName;
 import com.cookies.treasure.Get;
 import com.cookies.treasure.GetMode;
 import com.cookies.treasure.Key;
-import com.cookies.treasure.Write;
 import com.cookies.treasure.SaveMode;
 import com.cookies.treasure.Treasure;
+import com.cookies.treasure.Write;
 
 /**
  * 使用注解的例子
@@ -23,4 +24,6 @@ public interface ConfigWithAnnotations extends Treasure {
     @SaveMode(mode = Write.COMMIT)
     @GetMode(mode = Get.MODE_MULTI_PROCESS)
     void setUserName(String name);
+
+    String getRootUserName(@DefaultValue String name, String first, String last);
 }
