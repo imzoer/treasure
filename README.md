@@ -44,4 +44,4 @@ key的生成规则：
 
 使用接口的思路参考https://github.com/baoyongzhang/Treasure
 
-但是没有使用APT，简化了实现方法。
+但是没有使用APT，简化了实现方法。但是由于使用了proxy，性能会受到影响。
