@@ -23,7 +23,7 @@ key的生成规则：
 
 1、如果有{@link Key}，用key()的值
 
-2、2、对于GET函数，所有参数用于拼接key(第一个参数如果是被{@link DefaultValue}注解，则不用作默认值，不用作拼接key)；对于SET函数，如果args长度大于1，那么除最后一个参数，前面所有的参数用于拼接key。每个参数之间以_分隔
+2、对于GET函数，所有参数用于拼接key(第一个参数如果是被{@link DefaultValue}注解，则不用作默认值，不用作拼接key)；对于SET函数，如果args长度大于1，那么除最后一个参数，前面所有的参数用于拼接key。每个参数之间以_分隔
 
 3、如果args长度为1，用methodName生成key，比如getXXX，则生成的key是xxx
 
