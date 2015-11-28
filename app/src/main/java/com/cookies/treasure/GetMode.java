@@ -6,10 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by masonqwli on 15/11/22.
+ * Created by masonqwli on 15/11/28.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface FileName {
-    String filename();
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface GetMode {
+    Get mode();
 }

@@ -70,7 +70,18 @@ public class Treasures {
         } else {
             fileName = method.getDeclaringClass().getSimpleName().toLowerCase();
         }
-        SharedPreferences sp = context.getSharedPreferences(fileName, 0);
+
+        GetMode getModeAnnotation = method.getDeclaringClass().getAnnotation(GetMode.class);
+        Get get = Get.MODE_PRIVATE;
+        if (getModeAnnotation != null) {
+            get = getModeAnnotation.mode();
+        } else {
+            getModeAnnotation = method.getAnnotation(GetMode.class);
+            if (getModeAnnotation != null) {
+                get = getModeAnnotation.mode();
+            }
+        }
+        SharedPreferences sp = context.getSharedPreferences(fileName, get.get());
 
         // 2.get key for kv pair
         String key = "";
@@ -121,20 +132,40 @@ public class Treasures {
             if (paramTypes.length == 0) {
                 throw new RuntimeException("set " + key + " called but no value provided");
             }
+            if (args == null || args.length == 0) {
+                throw new RuntimeException("set func should not have 0 args.");
+            }
+            SaveMode saveModeAnnotation = method.getDeclaringClass().getAnnotation(SaveMode.class);
+            Write mode = Write.APPLY;
+            if (saveModeAnnotation != null) { // 检查接口是否有Mode注解
+                mode = saveModeAnnotation.mode();
+            } else {
+                // 检查方法是否有Mode注解
+                saveModeAnnotation = method.getAnnotation(SaveMode.class);
+                if (saveModeAnnotation != null) {
+                    mode = saveModeAnnotation.mode();
+                }
+            }
             int paramPos = args.length - 1;
             Class paramType = paramTypes[paramPos];
+            SharedPreferences.Editor e;
             if (paramType == int.class || paramType == Integer.class) {
-                sp.edit().putInt(key, (Integer) args[paramPos]).apply();
+                e = sp.edit().putInt(key, (Integer) args[paramPos]);
             } else if (paramType == String.class) {
-                sp.edit().putString(key, (String) args[paramPos]).apply();
+                e = sp.edit().putString(key, (String) args[paramPos]);
             } else if (paramType == long.class || paramType == Long.class) {
-                sp.edit().putLong(key, (Long) args[paramPos]).apply();
+                e = sp.edit().putLong(key, (Long) args[paramPos]);
             } else if (paramType == float.class || paramType == Float.class) {
-                sp.edit().putFloat(key, (Float) args[paramPos]).apply();
+                e = sp.edit().putFloat(key, (Float) args[paramPos]);
             } else if (paramType == boolean.class || paramType == Boolean.class) {
-                sp.edit().putBoolean(key, (Boolean) args[paramPos]).apply();
+                e = sp.edit().putBoolean(key, (Boolean) args[paramPos]);
             } else {
                 throw new RuntimeException("unknown paramType:" + paramType);
+            }
+            if (mode == Write.APPLY) {
+                e.apply();
+            } else {
+                e.commit();
             }
             return null;
         } else {
