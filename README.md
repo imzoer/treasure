@@ -28,15 +28,6 @@ key的生成规则：
 3、如果args长度为1，用methodName生成key，比如getXXX，则生成的key是xxx
 
 
-暂未支持的功能：
-
-1、指定sp的读取模式 private / multi process
-
-2、GET函数传入参数作为default值(对应于key的生成规则部分，2的临时方案)
-
-3、指定提交方式 commit/apply
-
-
 实现原理：
 
 使用java动态代理，将对接口的调用直接根据接口的定义（包括解析annotation）将解析出来的数据存储到sp中。
