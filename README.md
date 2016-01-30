@@ -1,4 +1,4 @@
-Treasuress是SharedPreference的包装类，使用Java接口代替sp操作
+Treasures是SharedPreference的包装类，使用Java接口代替sp操作
 ================================
 # 使用方法：
 * 在继承了Treasure接口的接口中定义需要的操作
