@@ -7,6 +7,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.security.InvalidParameterException;
 import java.util.HashMap;
 
 /**
@@ -42,6 +43,10 @@ public class Treasures {
     }
 
     public static <T extends Treasure> T of(Class<T> clazz) {
+        Class<?>[] interfaces = clazz.getInterfaces();
+        if (interfaces.length == 0 || interfaces.length > 1 || interfaces[0] != Treasure.class) {
+            throw new InvalidParameterException("Treasures class should only implements Treasure interface");
+        }
         if (container.containsKey(clazz)) {
             return (T) container.get(clazz);
         } else {
@@ -106,16 +111,14 @@ public class Treasures {
         if (keyAnnotation != null) {
             key = keyAnnotation.key();
         } else if (args != null && (hasDefaultValue ? args.length > 1 : args.length > 0)) {
+            key += methodName.substring(3).toLowerCase();
             int len = isGET ? args.length : args.length - 1;
             for (int i = 0; i < len; i++) {
                 if (i == 0 && hasDefaultValue) {
                     continue;
                 } else {
                     if (args[i].getClass() == String.class || args[i].getClass() == Integer.class || args[i].getClass() == Long.class) {
-                        key += args[i];
-                        if (i != len - 1) {
-                            key += "_";
-                        }
+                        key += "_" + args[i];
                         continue;
                     }
                 }

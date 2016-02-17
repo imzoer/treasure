@@ -25,5 +25,8 @@ public interface ConfigWithAnnotations extends Treasure {
     @GetMode(mode = Get.MODE_MULTI_PROCESS)
     void setUserName(String name);
 
-    String getRootUserName(@DefaultValue String name, String first, String last);
+    String getRootUserName(@DefaultValue String name, String uid);
+
+    // 记录uid的用户名
+    void setRootUserName(String uid, String name);
 }
